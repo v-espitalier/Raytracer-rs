@@ -1,5 +1,5 @@
 
-# Ray Tracer in Rust
+# Raytracer in Rust
 
 Here you can find a port to Rust, of the Ray Tracer in Atari 8-bit BASIC by D. Scott Williamson ( https://bunsen.itch.io/raytrace-movie-atari-8bit-by-d-scott-williamson ).
 
