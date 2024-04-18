@@ -7,12 +7,21 @@ I provide 2 implementations here: One that follows the Atari code line by line t
 
 ![Example of atari and pc images](generated_imgs/atari_and_pc.jpg)
 
-The code creates image files. You can then gather them in gif and convert them to a video using ImageMagick and ffmpeg respectively:
+The code generates image files. You can then gather them in gif and convert them to a video using ImageMagick and ffmpeg respectively:
 
+Compilation and run:
+~~~
+cargo build
+/target/debug/raytracer
+~~~
+
+List of image files to single video:
+~~~
 convert -delay 10 -loop 0 generated_imgs/img_atari_*.png anim_atari.gif
 ffmpeg -i anim_atari.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" video_atari.mp4
 
 convert -delay 3 -loop 0 generated_imgs/img_pc_*.png anim_pc.gif
 ffmpeg -i anim_pc.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" video_pc.mp4
+~~~
 
 There is also an ASM version that fits on a boot sector (see https://github.com/nanochess/RayTracer).
