@@ -20,8 +20,8 @@ List of image files to single video:
 convert -delay 10 -loop 0 generated_imgs/img_atari_*.png anim_atari.gif
 ffmpeg -i anim_atari.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" video_atari.mp4
 
-convert -delay 3 -loop 0 generated_imgs/img_pc_*.png anim_pc.gif
-ffmpeg -i anim_pc.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" video_pc.mp4
+convert -delay 3 -loop 0 generated_imgs/img_cpu_*.png anim_cpu.gif
+ffmpeg -i anim_cpu.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" video_cpu.mp4
 ~~~
 
 See also an ASM version created by Nanochess, that fits on a boot sector (https://github.com/nanochess/RayTracer).
