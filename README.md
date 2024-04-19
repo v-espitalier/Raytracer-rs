@@ -1,5 +1,5 @@
 
-# Ray Tracer in Rust
+# Raytracer in Rust
 
 Here you can find a port to Rust, of the Ray Tracer in Atari 8-bit BASIC by D. Scott Williamson ( https://bunsen.itch.io/raytrace-movie-atari-8bit-by-d-scott-williamson ).
 
@@ -24,4 +24,4 @@ convert -delay 3 -loop 0 generated_imgs/img_pc_*.png anim_pc.gif
 ffmpeg -i anim_pc.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" video_pc.mp4
 ~~~
 
-There is also an ASM version that fits on a boot sector (see https://github.com/nanochess/RayTracer).
+See also an ASM version created by Nanochess, that fits on a boot sector (https://github.com/nanochess/RayTracer).
