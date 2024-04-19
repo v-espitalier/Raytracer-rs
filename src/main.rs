@@ -1,14 +1,31 @@
-
 use image::{Rgba, RgbaImage, ImageResult};
 use std::sync::atomic::{AtomicUsize, Ordering, ATOMIC_USIZE_INIT};
 use std::thread;
 use std::time::Duration;
 
-// Atari -> Rust port
-fn raytracing_atari(n_iter: u32, factor_res: u32) {
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Initial Atari code for the Raytracer - BASIC Atari 8 bits - (Fits in 10 lignes)
+// https://bunsen.itch.io/raytrace-movie-atari-8bit-by-d-scott-williamson
+/////////////////////////////////////////////////////////////////////////////////////
+// 1 GR.31:SE.0,7,2:SE.1,3,8:SE.2,13,15:DI.DI(16):F.I=0TO15:REA.R:DI(I)=R:N.I:A=2
+// 2 F.N=0TO191:F.M=0TO159:POK.77,0:X=0:Y=-A/25:Z=A:I=SGN(M-80.5)
+// 3 U=(M-80.5)/(40*1.3):V=(N-80.5)/(80*1.3):W=1/SQR(U*U+V*V+1):U=U*W:V=V*W:G=1
+// 4 E=X-I:F=Y-I:P=U*E+V*F-W*Z:D=P*P-E*E-F*F-Z*Z+1:G.5+(D<=0)*3
+// 5 T=-P-SQR(D):G.6+(T<=0)*2:D.0,24,6,30,36,12,42,18,9,33,3,27,45,21,39,15
+// 6 X=X+T*U:Y=Y+T*V:Z=Z-T*W:E=X-I:F=Y-I:G=Z:P=2*(U*E+V*F-W*G)
+// 7 U=U-P*E:V=V-P*F:W=W+P*G:I=-I:G.4
+// 8 IF V<0THEN P=(Y+2)/V:S=INT(X-U*P)+INT(Z-W*P):S=S-INT(S/2)*2:V=-V*(S/2+.3)+.2
+// 9 C.3-INT(((3*16)*SQR(V)+DI((M-INT(M/4)*4)+(N-INT(N/4)*4)*4)/3)/16):PL.M,191-N
+// 10 N.M:N.N:A=10*(A=-1)+(A-.1)*(A>-1):G.2
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+// Direct port of atari BASIC code to Rust
+fn raytracing_cpu_atari_like(factor_res: u32, img_file_prefix: &String) {
         
-    //let n_iter: u32 = 110;     // Initial Atari program behavior
-    //let n_iter: u32 = 10;
+    let n_img_iter: u32 = 110;     // Initial Atari program behavior
+    //let n_img_iter: u32 = 10;
     //let factor_res: u32 = 1;   // Initial resolution
     //let factor_res: u32 = 3;
 
@@ -39,7 +56,7 @@ fn raytracing_atari(n_iter: u32, factor_res: u32) {
     //A=2
     let mut a : f32 = 2.;
 
-    for img_index in 0..n_iter {
+    for img_index in 0..n_img_iter {
 	    let mut image : RgbaImage = RgbaImage::new(cx * 2 * factor_res, cy * factor_res);
         
         for (im_x_fact, im_y_fact, pixel) in image.enumerate_pixels_mut() {
@@ -148,23 +165,24 @@ fn raytracing_atari(n_iter: u32, factor_res: u32) {
         else
             {a = a - 0.1;}
 
-        //let img_f_name : String = format!("raytracing_imgs/image{}.png", img_index);
-        let img_f_name : String = format!("generated_imgs/img_atari_{:0>3}.png", img_index);
-        let res : ImageResult<()> = image.save(&img_f_name);
-        println!("Saved image : {}", &img_f_name);
+        if (img_file_prefix.len() > 1) {
+            let img_f_name : String = format!("{}{:0>3}.png", img_file_prefix, img_index);
+            let res : ImageResult<()> = image.save(&img_f_name);
+            println!("Saved image : {}", &img_f_name);
+        }
      
-    }   // goto: G.2      // for img_index in 0..n_iter {
+    }   // goto: G.2      // for img_index in 0..n_img_iter {
+} // fn raytracing_cpu_atari_like
 
-}
 
-
-fn raytracing_pc_thread(ref_img_index_min : &i32, ref_img_index_max : &i32, ref_n_iter : &i32, ref_factor_res: &i32)
+// Internal function for multithreading version
+fn raytracing_cpu_single_thread(ref_img_index_min : &i32, ref_img_index_max : &i32, ref_n_img_iter : &i32, ref_factor_res: &i32, img_file_prefix: &String) 
 {
     let img_index_min: i32 = *ref_img_index_min;
     let img_index_max: i32 = *ref_img_index_max;
-    let n_iter: i32        = *ref_n_iter;
+    let n_img_iter: i32        = *ref_n_img_iter;
     let factor_res: i32    = *ref_factor_res;
-    println!("Thread img index min,max : {}, {}", img_index_min, img_index_max);
+    //println!("Thread img index min,max : {}, {}", img_index_min, img_index_max);
 
     // line 1
     // GR.31: Set resolution 160x192 (system instruction)
@@ -172,7 +190,7 @@ fn raytracing_pc_thread(ref_img_index_min : &i32, ref_img_index_max : &i32, ref_
     let cy: i32 = 192;
         
     for img_index in img_index_min..img_index_max {
-        println!("Image:{}", img_index);
+        //println!("Image:{}", img_index);
         // DI.DI(16): Declare constants array, dimension 16
         // F.I=0TO15:       // Feed it
         // REA.R
@@ -180,7 +198,7 @@ fn raytracing_pc_thread(ref_img_index_min : &i32, ref_img_index_max : &i32, ref_
         //N.I
 
         //A=2
-        let mut a : f32 = 2. - (img_index as f32) * 0.1 / (n_iter as f32) * 110.;
+        let mut a : f32 = 2. - (img_index as f32) * 0.1 / (n_img_iter as f32) * 110.;
         if a <= -1. {a = a + 11.;}
         //let mut a : f32 = 1.;
 
@@ -291,18 +309,22 @@ fn raytracing_pc_thread(ref_img_index_min : &i32, ref_img_index_max : &i32, ref_
         else
             {a = a - 0.1;}
         */
-
-        let img_f_name : String = format!("generated_imgs/img_pc_{:0>3}.png", img_index);
-        let res : ImageResult<()> = image.save(&img_f_name);
-        println!("Saved image : {}", &img_f_name);
      
-    }   // goto: G.2      // for img_index in 0..n_iter {
+        if (img_file_prefix.len() > 1) {
+            let img_f_name : String = format!("{}{:0>3}.png", img_file_prefix, img_index);
+            let res : ImageResult<()> = image.save(&img_f_name);
+            println!("Saved image : {}", &img_f_name);
+        }
+    }   // goto: G.2      // for img_index in 0..n_img_iter {
 
-}
+} // fn raytracing_single_thread()
 
-pub fn raytracing_pc(n_iter: i32, factor_res: i32, n_threads: u32) {
 
-    let n_img_per_thread: u32 = ((n_iter as f32) / (n_threads as f32)).ceil() as u32;
+// Atari -> Rust port (CPU) with higher resolution, higher number of imgs/sec, improved graphics, multithreading
+pub fn raytracing_cpu_multithreading(n_img_iter: i32, factor_res: i32, n_threads: u32, img_file_prefix: &String)
+{
+
+    let n_img_per_thread: u32 = ((n_img_iter as f32) / (n_threads as f32)).ceil() as u32;
 
     static GLOBAL_THREAD_COUNT: AtomicUsize = ATOMIC_USIZE_INIT;
     
@@ -310,15 +332,16 @@ pub fn raytracing_pc(n_iter: i32, factor_res: i32, n_threads: u32) {
     {
         let img_index_min: i32 = (n_img_per_thread * thread_index) as i32;
         let mut img_index_max: i32 = (n_img_per_thread * thread_index + n_img_per_thread) as i32;
-        if img_index_max >= n_iter {img_index_max = n_iter - 1;}
+        if img_index_max >= n_img_iter {img_index_max = n_img_iter - 1;}
+        let img_file_prefix_clone: String = img_file_prefix.clone();
 
         GLOBAL_THREAD_COUNT.fetch_add(1, Ordering::SeqCst);
         let handle = std::thread::spawn( move ||
         {
-            raytracing_pc_thread(&img_index_min, &img_index_max, &n_iter, &factor_res);
+            raytracing_cpu_single_thread(&img_index_min, &img_index_max, &n_img_iter, &factor_res, &img_file_prefix_clone);
             GLOBAL_THREAD_COUNT.fetch_sub(1, Ordering::SeqCst);
             std::thread::sleep(std::time::Duration::from_millis(1));
-            println!("Thread has terminated {} / {}", thread_index, n_threads);
+            //println!("Thread has terminated {} / {}", thread_index, n_threads);
         });
         //handle.join();
     }
@@ -330,9 +353,25 @@ pub fn raytracing_pc(n_iter: i32, factor_res: i32, n_threads: u32) {
         thread::sleep(Duration::from_millis(1)); 
     }
 
-}
+} // pub fn raytracing_cpu_multithreading(n_img_iter: i32, factor_res: i32, n_threads: u32, img_file_prefix: &String)
+
 
 fn main() {
-    raytracing_atari(110, 1);
-    raytracing_pc(300, 6, 16);
+
+    if (true) {
+        // Plain translation from Atari BASIC to Rust
+        let factor_res: u32 = 1;   // Original resolution 160x192 (without doubling the horizontal pixels)
+        let img_file_prefix: String = String::from("generated_imgs/img_atari_");
+        raytracing_cpu_atari_like(factor_res, &img_file_prefix);
+    }
+
+    if (true) {
+        // Translation to Rust + img quality improvements + multithreading
+        let n_img_iter: i32 = 300; // Increase the images rate (x3)
+        let factor_res: i32 = 5;   // Increase the resolution to HD
+        let n_threads: u32 = 16;   // Number of threads (should match the nb of cpu core)
+        let img_file_prefix: String = String::from("generated_imgs/img_cpu_");
+        raytracing_cpu_multithreading(n_img_iter, factor_res, n_threads, &img_file_prefix);
+    }
+ 
 }
