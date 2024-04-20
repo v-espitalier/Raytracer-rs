@@ -10,7 +10,7 @@ You can find 2 implementations here: One that follows the Atari code line by lin
 
 ![Example of atari, cpu, gpu images](examples_imgs/atari_cpu.jpg)
 
-The code generates image files. You can then gather them in gif and convert them to a video using ImageMagick and ffmpeg respectively:
+The code generates image files. You can then gather them to a video using ffmpeg:
 
 Compilation and run:
 ~~~
