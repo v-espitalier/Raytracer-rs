@@ -1,1 +1,4 @@
 /target
+*.mp4
+*.gif
+Cargo.lock

@@ -7,7 +7,7 @@ You can find 2 implementations here: One that follows the Atari code line by lin
 
 I recently added a third implementation, based on GPU and relying on tch-rs (a wrapper for libtorch). You can find it here: [v-espitalier/Raytracer-tch-rs](https://github.com/v-espitalier/Raytracer-tch-rs) .
 
-![Example of atari and pc images](generated_imgs/atari_and_pc.jpg)
+![Example of atari, cpu, gpu images](examples_imgs/atari_cpu.jpg)
 
 The code generates image files. You can then gather them in gif and convert them to a video using ImageMagick and ffmpeg respectively:
 
