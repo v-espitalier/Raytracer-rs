@@ -3,7 +3,7 @@
 
 (This repository is a clone of the other repo here [v-espitalier/Raytracer-tch-rs](https://github.com/v-espitalier/Raytracer-tch-rs) without the libtorch dependancy and the GPU tensors version.)
 
-Here you can find a port to Rust, of the Ray Tracer in Atari 8-bit BASIC by D. Scott Williamson ( https://bunsen.itch.io/raytrace-movie-atari-8bit-by-d-scott-williamson ).
+Here is a port to Rust, of the Ray Tracer in Atari 8-bit BASIC by D. Scott Williamson ( https://bunsen.itch.io/raytrace-movie-atari-8bit-by-d-scott-williamson ).
 
 You can find 2 implementations here: One that follows the Atari code line by line to get close to the the original output, and a fancier implementation in which I have replaced the dithering graphics with the usual color gradient, higher resolution, and multithreading for faster computation. 
 
